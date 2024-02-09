@@ -15,10 +15,8 @@ class Register(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def create(self, request):
-        print(request.user)
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            print("heyy")
             data = serializer.validated_data
             User.objects.create_user(email=data['email'].lower(), first_name=data['first_name'],
                                        last_name=data['last_name'], username=data['email'],
@@ -38,17 +36,16 @@ class Login(generics.GenericAPIView):
         if serializer.is_valid():
             email = serializer.validated_data.get("email")
             password = serializer.validated_data.get("password")
-            print('email', email, password)
             user = authenticate(username=email, password=password)
-            print(user)
             if user is not None:
                 login(request, user)
                 return Response({"message": "Success"})
             else:
-                return Response({"message": "Invalid credentials"}, status=400)
+                return Response({"message": "Invalid credentials"}, status=401)
+        return Response({"errors": serializer.errors}, status=400)
 
 
-class AuthorView(generics.ListCreateAPIView):
+class AuthorView(generics.ListCreateAPIView):   #creating and listing authors
     serializer_class = AuthorSerializer
     
     def get_queryset(request, *args, **kwargs):
@@ -61,7 +58,7 @@ class AuthorView(generics.ListCreateAPIView):
         return Response(status=201)
     
 
-class BooksView(generics.ListAPIView, generics.UpdateAPIView):
+class BooksView(generics.ListAPIView, generics.UpdateAPIView):  #list and update books
     serializer_class = BookSerializer
 
     def get_queryset(request, *args, **kwargs):
@@ -76,7 +73,7 @@ class BooksView(generics.ListAPIView, generics.UpdateAPIView):
         return Response({"errors": serializer.errors}, status=400)
     
     
-class AddReview(generics.GenericAPIView):
+class AddReview(generics.GenericAPIView):   #review book or author
 
     def post(self, request):
         serializer = ReviewSerializer(data=request.data)
@@ -110,10 +107,10 @@ class AddReview(generics.GenericAPIView):
                 book_obj.total_rating = average_rating
                 book_obj.save()
             return Response({"message": "Success"}, status=201)
-        return Response({"message": serializer.errors})
+        return Response({"message": serializer.errors}, status=400)
 
     
-class AuthorReview(generics.GenericAPIView):
+class AuthorReview(generics.GenericAPIView):    #list reviews of author
 
     def get(self, request, *args, **kwargs):
         reviews = Review.objects.filter(author__id=kwargs['author_id'])

@@ -10,12 +10,9 @@ class RegisterSerializer(serializers.Serializer):
     last_name = serializers.CharField(required=True)
 
     def validate_email(self, email):
-        print("haiiiiii")
         user = User.objects.filter(email=email)
         if user.exists():
-            print("Existsss")
             raise serializers.ValidationError("Email already exists")
-        print("error raised")
         return email
     
 
@@ -61,14 +58,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['author', 'book', 'rating', 'comment']
     
-    # def create(self, validated_data):
-    #     review = Review.objects.create(
-    #         author=validated_data.get('author'),
-    #         rating = validated_data.get('rating'),
-    #         comment = validated_data.get('comment'),
-    #         added_by = self.request.user
-    #     )
-    #     return super().create(validated_data)
+
 
 
     
